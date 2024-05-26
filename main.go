@@ -11,7 +11,8 @@ import (
 	"os"
 )
 
-// Define a struct to match the JSON response structure
+// In lieu of a go SDK for Ollama,
+// we create a stand-in.
 type ApiResponse struct {
 	Model              string `json:"model"`
 	CreatedAt          string `json:"created_at"`
@@ -101,10 +102,10 @@ func main() {
 	fmt.Printf("Response: %s\n", apiResponse.Response)
 	fmt.Printf("Done: %t\n", apiResponse.Done)
 	fmt.Printf("Done Reason: %s\n", apiResponse.DoneReason)
-	fmt.Printf("Total Duration: %d ns\n", apiResponse.TotalDuration)
-	fmt.Printf("Load Duration: %d ns\n", apiResponse.LoadDuration)
+	fmt.Printf("Total Duration: %.1f s\n", float64(apiResponse.TotalDuration/1e9))
+	fmt.Printf("Load Duration: %.1f s\n", float64(apiResponse.LoadDuration/1e9))
 	fmt.Printf("Prompt Evaluation Count: %d\n", apiResponse.PromptEvalCount)
-	fmt.Printf("Prompt Evaluation Duration: %d ns\n", apiResponse.PromptEvalDuration)
+	fmt.Printf("Prompt Evaluation Duration: %.1f s\n", float64(apiResponse.PromptEvalDuration/1e9))
 	fmt.Printf("Evaluation Count: %d\n", apiResponse.EvalCount)
-	fmt.Printf("Evaluation Duration: %d ns\n", apiResponse.EvalDuration)
+	fmt.Printf("Evaluation Duration: %.1f s\n", float64(apiResponse.EvalDuration/1e9))
 }
