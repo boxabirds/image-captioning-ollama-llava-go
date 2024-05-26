@@ -1,3 +1,7 @@
+// this is a demo that connects to ollama and
+// Prerequisites:
+// - ollama
+// - open weights model "llava" 1.6 or greater
 package main
 
 import (
