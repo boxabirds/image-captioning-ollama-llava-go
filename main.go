@@ -3,12 +3,29 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 )
+
+// Define a struct to match the JSON response structure
+type ApiResponse struct {
+	Model              string `json:"model"`
+	CreatedAt          string `json:"created_at"`
+	Response           string `json:"response"`
+	Done               bool   `json:"done"`
+	DoneReason         string `json:"done_reason"`
+	Context            []int  `json:"context"`
+	TotalDuration      int64  `json:"total_duration"`
+	LoadDuration       int64  `json:"load_duration"`
+	PromptEvalCount    int    `json:"prompt_eval_count"`
+	PromptEvalDuration int64  `json:"prompt_eval_duration"`
+	EvalCount          int    `json:"eval_count"`
+	EvalDuration       int64  `json:"eval_duration"`
+}
 
 func main() {
 	// Command line flags
@@ -44,8 +61,8 @@ func main() {
 	// Prepare the API request
 	url := *baseURL + "/api/generate"
 	requestBody := fmt.Sprintf(`{
-		"model": "llava:latest",
-		"prompt": "What is in this picture?",
+		"model": "llava",
+		"prompt": "Provide an exhaustive description of the computer software image including identifying all objects and describing them and their relationships",
 		"stream": false,
 		"images": ["%s"]
 	}`, encodedImage)
@@ -65,11 +82,29 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	// Read and print the response
+	// Read and parse the response
 	responseData, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Failed to read response: %s\n", err)
 		os.Exit(1)
 	}
-	fmt.Println(string(responseData))
+
+	var apiResponse ApiResponse
+	if err := json.Unmarshal(responseData, &apiResponse); err != nil {
+		fmt.Printf("Failed to parse response JSON: %s\n", err)
+		os.Exit(1)
+	}
+
+	// Print the response in a readable format
+	fmt.Printf("Model: %s\n", apiResponse.Model)
+	fmt.Printf("Created At: %s\n", apiResponse.CreatedAt)
+	fmt.Printf("Response: %s\n", apiResponse.Response)
+	fmt.Printf("Done: %t\n", apiResponse.Done)
+	fmt.Printf("Done Reason: %s\n", apiResponse.DoneReason)
+	fmt.Printf("Total Duration: %d ns\n", apiResponse.TotalDuration)
+	fmt.Printf("Load Duration: %d ns\n", apiResponse.LoadDuration)
+	fmt.Printf("Prompt Evaluation Count: %d\n", apiResponse.PromptEvalCount)
+	fmt.Printf("Prompt Evaluation Duration: %d ns\n", apiResponse.PromptEvalDuration)
+	fmt.Printf("Evaluation Count: %d\n", apiResponse.EvalCount)
+	fmt.Printf("Evaluation Duration: %d ns\n", apiResponse.EvalDuration)
 }
