@@ -36,6 +36,7 @@ func main() {
 	// Command line flags
 	imagePath := flag.String("image", "", "Path to the image file")
 	baseURL := flag.String("baseurl", "http://localhost:11434", "Base URL of the API")
+	prompt := flag.String("prompt", "Describe this image", "Prompt to use to instruct image captioning")
 
 	flag.Parse()
 
@@ -66,11 +67,11 @@ func main() {
 	// Prepare the API request
 	url := *baseURL + "/api/generate"
 	requestBody := fmt.Sprintf(`{
-		"model": "llava",
-		"prompt": "Provide an exhaustive description of the computer software image including identifying all objects and describing them and their relationships",
+		"model": "llava:latest",
+		"prompt": "%s",
 		"stream": false,
 		"images": ["%s"]
-	}`, encodedImage)
+	}`, *prompt, encodedImage)
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(requestBody))
 	if err != nil {
 		fmt.Printf("Failed to create request: %s\n", err)
@@ -94,6 +95,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Printf("Response: %s\n", string(responseData))
 	var apiResponse ApiResponse
 	if err := json.Unmarshal(responseData, &apiResponse); err != nil {
 		fmt.Printf("Failed to parse response JSON: %s\n", err)
